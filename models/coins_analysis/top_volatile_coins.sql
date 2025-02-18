@@ -7,6 +7,8 @@ WITH coin_price_volatility AS (
         (high_24h - low_24h) / low_24h * 100 AS price_volatility_percent,
         creation_date
     FROM {{ ref('transformed_coingecko_data') }}
+    WHERE HIGH_24H IS NOT NULL
+        AND LOW_24H IS NOT NULL
 )
 
 SELECT *
