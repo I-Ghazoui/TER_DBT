@@ -35,6 +35,8 @@ models:
       schema: TER_PROCESS_DATA
       coingecko_coins_data_transformed_view:
         materialized: view
+      transformed_coingecko_data:
+        materialized: view
     coins_analysis:
       schema: TER_ANALYSIS_DATA
       top_10_market_cap:
