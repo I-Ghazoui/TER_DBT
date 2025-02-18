@@ -31,5 +31,12 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   ter_dbt:
-    coingecko_coins_data_transformed_view:
+    coins_process:
       schema: TER_PROCESS_DATA
+      coingecko_coins_data_transformed_view:
+        materialized: view
+    coins_analysis:
+      schema: TER_ANALYSIS_DATA
+      top_10_market_cap:
+        materialized: table
+
