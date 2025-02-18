@@ -41,4 +41,10 @@ models:
       schema: TER_ANALYSIS_DATA
       top_10_market_cap:
         materialized: table
+      top_volatile_coins:
+        materialized: table
+      coins_price_deviation:
+        materialized: table
+      coins_market_efficiency:
+        materialized: table
 
