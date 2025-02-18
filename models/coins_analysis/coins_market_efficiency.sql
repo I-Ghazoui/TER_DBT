@@ -1,7 +1,7 @@
 WITH coin_market_efficiency AS (
     SELECT
         symbol,
-        coin_name,
+        NAME,
         market_cap,
         total_volume,
         (total_volume / market_cap) * 100 AS efficiency_ratio,

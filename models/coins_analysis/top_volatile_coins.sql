@@ -1,7 +1,7 @@
 WITH coin_price_volatility AS (
     SELECT
         symbol,
-        coin_name,
+        NAME,
         high_24h,
         low_24h,
         (high_24h - low_24h) / low_24h * 100 AS price_volatility_percent,

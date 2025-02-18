@@ -1,7 +1,7 @@
 WITH coin_price_deviation AS (
     SELECT
         symbol,
-        coin_name,
+        NAME,
         current_price,
         ath,
         atl,
