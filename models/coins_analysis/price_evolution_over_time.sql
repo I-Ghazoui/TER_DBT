@@ -1,5 +1,3 @@
-{{ config(materialized='view') }}
-
 WITH price_evolution AS (
     SELECT 
         SYMBOL,
