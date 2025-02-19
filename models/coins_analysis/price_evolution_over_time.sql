@@ -2,10 +2,10 @@
 
 WITH price_evolution AS (
     SELECT 
-        symbol,
-        coin_name,
-        current_price,
-        creation_date
+        SYMBOL,
+        NAME,
+        CURRENT_PRICE,
+        CREATION_DATE
     FROM {{ ref('transformed_coingecko_data') }}
 )
 
