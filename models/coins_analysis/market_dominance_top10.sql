@@ -9,4 +9,4 @@ WITH top_10_market_dominance AS (
 
 SELECT *
 FROM top_10_market_dominance
-ORDER BY MARKET_CAP DESC;
+ORDER BY MARKET_CAP DESC
