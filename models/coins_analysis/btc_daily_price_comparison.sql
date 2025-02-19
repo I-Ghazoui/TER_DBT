@@ -4,7 +4,7 @@ with daily_prices as (
         symbol,
         name,
         avg(CURRENT_PRICE) as avg_daily_price,
-        date_trunc('day', created_at) as price_date
+        date_trunc('day', CREATION_DATE) as price_date
     from {{ ref('transformed_coingecko_data_v') }}
     where symbol = 'btc'
         and name = 'Bitcoin'
