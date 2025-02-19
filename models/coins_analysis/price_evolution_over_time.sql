@@ -11,4 +11,4 @@ WITH price_evolution AS (
 
 SELECT *
 FROM price_evolution
-ORDER BY symbol, creation_date;
+ORDER BY symbol, creation_date
