@@ -1,6 +1,7 @@
 WITH latest_top_10_cryptos AS (
     SELECT 
-        SYMBOL
+        SYMBOL,
+        NAME
     FROM {{ ref('transformed_coingecko_data_v') }}
     WHERE CREATION_DATE = (
         SELECT MAX(CREATION_DATE) 
@@ -17,7 +18,7 @@ price_evolution_top_10 AS (
         CURRENT_PRICE,
         CREATION_DATE
     FROM {{ ref('transformed_coingecko_data_v') }}
-    WHERE SYMBOL IN (SELECT SYMBOL FROM latest_top_10_cryptos)
+    WHERE (SYMBOL, NAME) IN (SELECT SYMBOL, NAME FROM latest_top_10_cryptos)
 )
 
 SELECT *
