@@ -10,3 +10,4 @@ WHERE symbol = 'btc'
         and name = 'Bitcoin'
 GROUP BY symbol, name, price_date
 ORDER BY price_date DESC
+LIMIT 2
