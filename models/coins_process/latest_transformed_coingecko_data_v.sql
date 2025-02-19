@@ -1,11 +1,11 @@
-{{ config( materialized='view' ) }}
+{{ config(materialized='view') }}
 
-WITH LATEST_CREATION_DATE AS(
-    SELECT MAX(CREATION_DATE) AS MAX_CREATION_DATE
+WITH latest_date AS (
+    SELECT MAX(creation_date) AS max_creation_date
     FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_COINS_DATA
 ),
 
-COINGECKO_COINS_DATA_TRANSFORMED AS (
+transformed_coins_data AS (
     SELECT
         ID,
         SYMBOL,
@@ -44,7 +44,9 @@ COINGECKO_COINS_DATA_TRANSFORMED AS (
 
     FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_COINS_DATA
 
-    WHERE CREATION_DATE = (SELECT MAX_CREATION_DATE FROM LATEST_CREATION_DATE)
+    WHERE creation_date = (SELECT max_creation_date FROM latest_date)
 )
 
-SELECT * FROM COINGECKO_COINS_DATA_TRANSFORMED
+SELECT *
+FROM transformed_coins_data
+
