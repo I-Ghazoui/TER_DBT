@@ -6,7 +6,7 @@ WITH price_evolution AS (
         NAME,
         CURRENT_PRICE,
         CREATION_DATE
-    FROM {{ ref('transformed_coingecko_data') }}
+    FROM {{ ref('transformed_coingecko_data_v') }}
 )
 
 SELECT *
