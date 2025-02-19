@@ -41,4 +41,6 @@ models:
       schema: TER_ANALYSIS_DATA
       top_10_price_evolution_over_time:
         materialized: table
+      market_dominance_top10:
+        materialized: table
 
