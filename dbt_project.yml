@@ -39,6 +39,6 @@ models:
         materialized: view
     coins_analysis:
       schema: TER_ANALYSIS_DATA
-      price_evolution_over_time:
+      top_10_price_evolution_over_time:
         materialized: table
 
