@@ -43,4 +43,6 @@ models:
         materialized: table
       market_dominance_top10:
         materialized: table
+      btc_daily_price_comparison:
+        materialized: table
 
