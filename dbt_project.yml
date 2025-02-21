@@ -45,4 +45,11 @@ models:
         materialized: table
       btc_daily_price_comparison:
         materialized: view
-
+      historical_market_cap_trends:
+        materialized: incremental
+      historical_price_volatility:
+        materialized: incremental
+      latest_top_gainers_losers:
+        materialized: table
+      latest_fdv_gap_analysis:
+        materialized: table
