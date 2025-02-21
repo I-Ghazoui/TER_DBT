@@ -2,7 +2,7 @@
 
 with base as (
     select *
-    from {{ ref('transformed_coins_data_latest') }}
+    from {{ ref('latest_transformed_coingecko_data_v') }}
 )
 select
     id,
