@@ -10,7 +10,7 @@ with base as (
 
 select
     cast(creation_date as date) as date,
-    id,
+    symbol,
     name,
     market_cap
 from base

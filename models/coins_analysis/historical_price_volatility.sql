@@ -9,9 +9,9 @@ with base as (
 )
 
 select
-    id,
+    symbol,
     name,
     avg((high_24h - low_24h) / nullif(low_24h, 0) * 100) as avg_volatility_percentage
 from base
-group by id, name
+group by symbol, name
 order by avg_volatility_percentage desc
