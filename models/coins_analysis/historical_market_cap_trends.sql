@@ -5,6 +5,7 @@ with base as (
     from {{ ref('transformed_coingecko_data_v') }}
     {% if is_incremental() %}
        where creation_date > (select max(creation_date) from {{ this }})
+            AND WHERE symbol IN ('btc', 'eth', 'usdt', 'sol', 'xrp', 'doge', 'trx', 'ada', 'shib')
     {% endif %}
 )
 
