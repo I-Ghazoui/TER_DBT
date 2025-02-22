@@ -14,8 +14,8 @@ WITH supply_analysis AS (
     AND NAME != ' '
     AND SYMBOL IS NOT NULL
     AND SYMBOL != ' '
-    AND SYMBOL NOT IN ('usdt', 'usdc', 'usds') -- Exclude stablecoins
-    LIMIT 10
+    AND SYMBOL NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth') -- Exclude stablecoins
+    
 )
 
 SELECT 
