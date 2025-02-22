@@ -22,7 +22,7 @@ WITH base AS (
     AND SYMBOL IS NOT NULL
     AND SYMBOL != ' '
     AND SYMBOL NOT IN ('usdt', 'usdc', 'usds') -- Exclustion de  USDT et USDC
-)
+),
 
 volatility_analysis AS (
     SELECT 
