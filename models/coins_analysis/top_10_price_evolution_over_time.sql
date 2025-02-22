@@ -10,7 +10,7 @@ WITH latest_top_10_cryptos AS (
     AND SYMBOL NOT IN ('usdt', 'usdc', 'usds') -- We ignore USDT and USDC cuz they are stable coins, we can't really trade them.
     ORDER BY MARKET_CAP_RANK
     LIMIT 10
-)
+),
 
 price_evolution_top_10 AS (
     SELECT 
@@ -21,7 +21,7 @@ price_evolution_top_10 AS (
         CREATION_DATE
     FROM {{ ref('transformed_coingecko_data_v') }}
     WHERE (SYMBOL, NAME) IN (SELECT SYMBOL, NAME FROM latest_top_10_cryptos)
-)
+),
 
 distance_to_ath AS (
     SELECT 
