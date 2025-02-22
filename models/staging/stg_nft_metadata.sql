@@ -22,7 +22,7 @@ WITH metadata_cleanup AS (
         nft_is_disabled,
         nft_is_nsfw,
         nft_token_standard,
-    FROM MY_DATA_RAW
+    FROM NFT_EVENTS
 )
 
 SELECT
