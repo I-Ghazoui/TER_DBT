@@ -7,10 +7,9 @@
 
 WITH base AS (
     SELECT
-        MD5(CONCAT(TRANSACTION, NFT_IDENTIFIER, EVENT_TIMESTAMP)) AS event_hash,
+        TRANSACTION AS event_hash,
         EVENT_TYPE,
         CHAIN,
-        TRANSACTION AS transaction_hash,
         CAST(EVENT_TIMESTAMP AS TIMESTAMP_NTZ) AS event_timestamp,
         NFT_IDENTIFIER,
         NFT_COLLECTION,
