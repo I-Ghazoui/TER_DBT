@@ -1,7 +1,5 @@
 {{
     config(
-        materialized='incremental',
-        unique_key='metadata_hash',
         partition_by={'field': 'updated_at', 'data_type': 'timestamp'},
         cluster_by=['nft_collection', 'nft_contract', 'CHAIN']
     )
@@ -9,7 +7,6 @@
 
 WITH metadata_cleanup AS (
     SELECT
-        MD5(CONCAT(nft_contract, nft_identifier)) AS metadata_hash,
         CHAIN,
         nft_identifier,
         nft_collection,

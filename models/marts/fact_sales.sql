@@ -1,7 +1,5 @@
 {{
     config(
-        materialized='incremental',
-        unique_key='sale_id',
         partition_by={'field': 'event_timestamp', 'data_type': 'timestamp'},
         cluster_by=['nft_contract']
     )
