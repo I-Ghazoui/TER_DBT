@@ -9,6 +9,8 @@ WITH price_changes AS (
 market_cap_changes AS (
     SELECT 
         ID AS CRYPTO_ID,
+        SYMBOL,
+        NAME,
         MARKET_CAP,
         CREATION_DATE::DATE AS TRADE_DATE
     FROM {{ ref('transformed_coingecko_data_v') }}
