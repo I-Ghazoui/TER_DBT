@@ -58,15 +58,12 @@ models:
       schema: TER_PROCESS_DATA
       stg_events:
         materialized: incremental
-      stg_nft_events_v:
+      crypto_prices:
         materialized: view
-      
 
     marts:
       schema: TER_ANALYSIS_DATA
       fact_sales:
         materialized: incremental
       fact_transfers:
-        materialized: incremental
-      nft_metadata:
         materialized: incremental
