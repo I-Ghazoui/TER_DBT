@@ -2,46 +2,51 @@ WITH daily_data AS (
     SELECT 
         CRYPTO_ID,
         OHLC_TIMESTAMP::DATE AS TRADE_DATE,
-        MAX(CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
-    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
+        AVG(CLOSE_PRICE) AS CLOSE_PRICE
+    FROM {{ ref('transformed_coingecko_ohlc_v') }}
     GROUP BY CRYPTO_ID, OHLC_TIMESTAMP::DATE
 ),
-price_changes AS (
-    SELECT 
-        d.CRYPTO_ID,
-        d.TRADE_DATE,
-        d.CLOSE_PRICE,
-        LAG(d.CLOSE_PRICE) OVER (PARTITION BY d.CRYPTO_ID ORDER BY d.TRADE_DATE) AS PREV_CLOSE_PRICE
-    FROM daily_data d
+
+daily_data_with_lag AS (
+    SELECT
+        CRYPTO_ID,
+        TRADE_DATE,
+        CLOSE_PRICE,
+        LAG(CLOSE_PRICE) OVER (PARTITION BY CRYPTO_ID ORDER BY TRADE_DATE) AS PREV_CLOSE_PRICE
+    FROM daily_data
 ),
+
 market_cap_daily AS (
     SELECT 
         ID AS CRYPTO_ID,
         SYMBOL,
         NAME,
-        MARKET_CAP,
+        AVG(MARKET_CAP) AS MARKET_CAP,
         CREATION_DATE::DATE AS TRADE_DATE
     FROM {{ ref('transformed_coingecko_data_v') }}
+    GROUP BY ID, SYMBOL, NAME, CREATION_DATE::DATE
 ),
-market_cap_changes AS (
-    SELECT 
-        m.CRYPTO_ID,
-        m.SYMBOL,
-        m.NAME,
-        m.TRADE_DATE,
-        m.MARKET_CAP,
-        LAG(m.MARKET_CAP) OVER (PARTITION BY m.CRYPTO_ID ORDER BY m.TRADE_DATE) AS PREV_MARKET_CAP
-    FROM market_cap_daily m
+
+market_cap_with_lag AS (
+    SELECT
+        CRYPTO_ID,
+        SYMBOL,
+        NAME,
+        TRADE_DATE,
+        MARKET_CAP,
+        LAG(MARKET_CAP) OVER (PARTITION BY CRYPTO_ID ORDER BY TRADE_DATE) AS PREV_MARKET_CAP
+    FROM market_cap_daily
 )
+
 SELECT 
-    p.CRYPTO_ID,
-    c.SYMBOL,
-    c.NAME,
-    p.TRADE_DATE,
-    (p.CLOSE_PRICE - p.PREV_CLOSE_PRICE) / NULLIF(p.PREV_CLOSE_PRICE, 0) * 100 AS PRICE_CHANGE_PERCENTAGE,
-    (c.MARKET_CAP - c.PREV_MARKET_CAP) / NULLIF(c.PREV_MARKET_CAP, 0) * 100 AS MARKET_CAP_CHANGE_PERCENTAGE
-FROM price_changes p
-JOIN market_cap_changes c
-    ON p.CRYPTO_ID = c.CRYPTO_ID AND p.TRADE_DATE = c.TRADE_DATE
-WHERE p.PREV_CLOSE_PRICE IS NOT NULL
-ORDER BY c.NAME ASC, p.TRADE_DATE DESC
+    ddt.CRYPTO_ID,
+    mcd.SYMBOL,
+    mcd.NAME,
+    ddt.TRADE_DATE,
+    ((ddt.CLOSE_PRICE - ddt.PREV_CLOSE_PRICE) / NULLIF(ddt.PREV_CLOSE_PRICE, 0)) * 100 AS PRICE_CHANGE_PERCENTAGE,
+    ((mcd.MARKET_CAP - mcd.PREV_MARKET_CAP) / NULLIF(mcd.PREV_MARKET_CAP, 0)) * 100 AS MARKET_CAP_CHANGE_PERCENTAGE
+FROM daily_data_with_lag ddt
+JOIN market_cap_with_lag mcd
+    ON ddt.CRYPTO_ID = mcd.CRYPTO_ID AND ddt.TRADE_DATE = mcd.TRADE_DATE
+WHERE ddt.PREV_CLOSE_PRICE IS NOT NULL
+ORDER BY mcd.NAME ASC, ddt.TRADE_DATE DESC;

@@ -65,6 +65,8 @@ models:
       schema: TER_ANALYSIS_DATA
       ohlc_daily_volatility:
         materialized: table
+      ohlc_correlation_price_Marketcap:
+        materialized: table
 
     staging:
       schema: TER_PROCESS_DATA
