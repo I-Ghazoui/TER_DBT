@@ -46,4 +46,4 @@ SELECT
 FROM trend_analysis
 GROUP BY SYMBOL, TRADE_DATE
 HAVING COUNT(*) > 0 -- Assurez-vous qu'il y a au moins une ligne pour chaque combinaison SYMBOL/TRADE_DATE
-ORDER BY SYMBOL ASC, TRADE_DATE DESC;
+ORDER BY SYMBOL ASC, TRADE_DATE DESC
