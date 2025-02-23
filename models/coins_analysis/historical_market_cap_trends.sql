@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    unique_key='(symbol, date)' --  Correction clé unique
+    unique_key=('symbol', 'date')  -- Syntaxe tuple correcte
 ) }}
 
 {% if is_incremental() %}
@@ -12,14 +12,13 @@
 {% endif %}
 
 SELECT
-    CAST(creation_date AS DATE) AS date, -- Colonne finale : "date"
+    CAST(creation_date AS DATE) AS date, -- Alias explicite
     symbol,
     name,
     market_cap
 FROM {{ ref('transformed_coingecko_data_v') }}
-WHERE 1=1
-    AND symbol IN ('btc', 'eth', 'usdt', 'sol', 'xrp', 'doge', 'trx', 'ada', 'shib')
-    {% if is_incremental() %}
-        AND creation_date > '{{ max_date }}' 
-    {% endif %}
+WHERE symbol IN ('btc', 'eth', 'usdt', 'sol', 'xrp', 'doge', 'trx', 'ada', 'shib')
+{% if is_incremental() %}
+    AND creation_date > '{{ max_date }}'
+{% endif %}
 ORDER BY date ASC
