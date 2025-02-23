@@ -53,7 +53,8 @@ base AS (
 
 SELECT
     base.*,
-    COALESCE(crypto_prices.price, 0) AS price
+    COALESCE(crypto_prices.price, 0) AS price,
+    base.sale_amount * COALESCE(crypto_prices.price, 0) AS sale_price
 FROM base
 LEFT JOIN crypto_prices
 ON base.CRYPTO_SYMBOL = crypto_prices.crypto_symbol

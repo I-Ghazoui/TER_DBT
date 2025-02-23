@@ -18,11 +18,11 @@ WITH sales_data AS (
         buyer,
         sale_amount,
         CRYPTO_SYMBOL,
-        price AS sale_price,
+        sale_price,
         COALESCE(TRY_CAST(quantity AS INTEGER), 1) AS quantity,
         COUNT(*) OVER (PARTITION BY nft_identifier, nft_collection) AS nft_total_sales,
-        RANK() OVER (PARTITION BY nft_collection ORDER BY sale_amount DESC) AS nft_price_rank,
-        LAG(sale_amount) OVER (PARTITION BY nft_identifier, nft_collection ORDER BY event_timestamp) AS nft_previous_sale_price
+        RANK() OVER (PARTITION BY nft_collection ORDER BY sale_price DESC) AS nft_price_rank,
+        LAG(sale_price) OVER (PARTITION BY nft_identifier, nft_collection ORDER BY event_timestamp) AS nft_previous_sale_price
     FROM {{ ref('stg_events') }}
     WHERE EVENT_TYPE = 'sale'
 )
@@ -31,7 +31,7 @@ SELECT
     *,
     CASE
         WHEN nft_previous_sale_price IS NULL OR nft_previous_sale_price = 0 THEN 0
-        ELSE ((sale_amount - nft_previous_sale_price) / nft_previous_sale_price) * 100
+        ELSE ((sale_price - nft_previous_sale_price) / nft_previous_sale_price) * 100
     END AS price_change_percent,
         CASE
         WHEN nft_token_standard = 'erc721' THEN 'Single'
