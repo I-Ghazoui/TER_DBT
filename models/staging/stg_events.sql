@@ -12,7 +12,7 @@ WITH crypto_prices AS (
     FROM {{ ref('latest_transformed_coingecko_data_v') }}
 ),
 
-WITH base AS (
+base AS (
     SELECT
         TRANSACTION AS event_hash,
         EVENT_TYPE,
