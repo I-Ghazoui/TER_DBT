@@ -2,7 +2,7 @@ WITH daily_data AS (
     SELECT 
         CRYPTO_ID,
         OHLC_TIMESTAMP::DATE AS TRADE_DATE,
-        MAX(CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
+        AVG(CLOSE_PRICE) AS CLOSE_PRICE -- Calcul de la moyenne du prix de clôture quotidien
     FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
     GROUP BY CRYPTO_ID, OHLC_TIMESTAMP::DATE
 ),
@@ -32,7 +32,18 @@ trend_analysis AS (
     JOIN {{ ref('transformed_coingecko_data_v') }} c
         ON p.CRYPTO_ID = c.ID
 )
-SELECT *
+SELECT 
+    SYMBOL,
+    TRADE_DATE,
+    AVG(CLOSE_PRICE) AS AVG_CLOSE_PRICE, -- Calcul de la moyenne du prix de clôture pour chaque coin/jour
+    AVG(MA_7D) AS AVG_MA_7D, -- Moyenne des moyennes mobiles sur 7 jours
+    AVG(MA_30D) AS AVG_MA_30D, -- Moyenne des moyennes mobiles sur 30 jours
+    CASE 
+        WHEN AVG(MA_7D) > AVG(MA_30D) THEN 'Uptrend'
+        WHEN AVG(MA_7D) < AVG(MA_30D) THEN 'Downtrend'
+        ELSE 'Neutral'
+    END AS FINAL_TREND_STATUS
 FROM trend_analysis
-WHERE TREND_STATUS = 'Uptrend' -- Focus on uptrends
-ORDER BY SYMBOL ASC, TRADE_DATE DESC
+GROUP BY SYMBOL, TRADE_DATE
+HAVING COUNT(*) > 0 -- Assurez-vous qu'il y a au moins une ligne pour chaque combinaison SYMBOL/TRADE_DATE
+ORDER BY SYMBOL ASC, TRADE_DATE DESC;
