@@ -22,7 +22,7 @@ WITH metadata_cleanup AS (
         nft_is_disabled,
         nft_is_nsfw,
         nft_token_standard,
-    FROM NFT_EVENTS
+    FROM {{ ref('stg_nft_events_v') }} 
 )
 
 SELECT
