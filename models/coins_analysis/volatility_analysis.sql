@@ -1,15 +1,4 @@
-{{ config(
-    materialized='incremental',
-    unique_key='(symbol, trade_date)' 
-) }}
-
-{% if is_incremental() %}
-    {% set max_date_query %}
-        SELECT COALESCE(MAX(trade_date), '1970-01-01'::DATE) 
-        FROM {{ this }}
-    {% endset %}
-    {% set max_date = run_query(max_date_query).columns[0][0] %}
-{% endif %}
+{{ config(materialized='table') }} -- ◀ Changement en table standard
 
 WITH base AS (
     SELECT 
@@ -21,50 +10,47 @@ WITH base AS (
         low_24h,
         ath,
         atl,
-        creation_date::DATE AS trade_date -- ◀ Alias explicite
+        creation_date::DATE AS trade_date
     FROM {{ ref('transformed_coingecko_data_v') }}
-    WHERE 1=1
-        AND id IS NOT NULL
+    WHERE 
+        id IS NOT NULL
         AND id != ' '
         AND name IS NOT NULL
         AND name != ' '
         AND symbol IS NOT NULL
         AND symbol != ' '
         AND symbol NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth')
-        {% if is_incremental() %}
-            AND creation_date::DATE > '{{ max_date }}' -- ◀ Filtrer sur la colonne originale
-        {% endif %}
 ),
 
 volatility_analysis AS (
     SELECT 
-        ID,
-        SYMBOL,
-        NAME,
-        TRADE_DATE,
-        (HIGH_24H - LOW_24H) / NULLIF(CURRENT_PRICE, 0) * 100 AS RELATIVE_VOLATILITY_PERCENTAGE,
-        (CURRENT_PRICE - ATH) / NULLIF(ATH, 0) * 100 AS DISTANCE_TO_ATH_PERCENTAGE,
-        (CURRENT_PRICE - ATL) / NULLIF(ATL, 0) * 100 AS DISTANCE_TO_ATL_PERCENTAGE
+        symbol,
+        name,
+        (high_24h - low_24h) / NULLIF(current_price, 0) * 100 AS relative_volatility_percentage,
+        (current_price - ath) / NULLIF(ath, 0) * 100 AS distance_to_ath_percentage,
+        (current_price - atl) / NULLIF(atl, 0) * 100 AS distance_to_atl_percentage
     FROM base
-    WHERE ATL > 0.0001 -- Exclure les cryptomonnaies avec un ATL extrêmement bas
+    WHERE atl > 0.0001
 ),
+
 aggregated_metrics AS (
     SELECT 
-        SYMBOL,
-        NAME,
-        AVG(RELATIVE_VOLATILITY_PERCENTAGE) AS AVG_RELATIVE_VOLATILITY,
-        AVG(DISTANCE_TO_ATH_PERCENTAGE) AS AVG_DISTANCE_TO_ATH,
-        AVG(DISTANCE_TO_ATL_PERCENTAGE) AS AVG_DISTANCE_TO_ATL
+        symbol,
+        name,
+        AVG(relative_volatility_percentage) AS avg_relative_volatility,
+        AVG(distance_to_ath_percentage) AS avg_distance_to_ath,
+        AVG(distance_to_atl_percentage) AS avg_distance_to_atl
     FROM volatility_analysis
-    GROUP BY SYMBOL, NAME
+    GROUP BY symbol, name
 )
+
 SELECT 
-    SYMBOL,
-    NAME,
-    AVG_RELATIVE_VOLATILITY,
-    AVG_DISTANCE_TO_ATH,
-    AVG_DISTANCE_TO_ATL
+    symbol,
+    name,
+    avg_relative_volatility,
+    avg_distance_to_ath,
+    avg_distance_to_atl
 FROM aggregated_metrics
-WHERE AVG_DISTANCE_TO_ATL < 15000 -- Filtrer les cryptomonnaies avec une distance à l'ATL < 15000 %
-ORDER BY AVG_RELATIVE_VOLATILITY DESC
+WHERE avg_distance_to_atl < 15000
+ORDER BY avg_relative_volatility DESC
 LIMIT 20

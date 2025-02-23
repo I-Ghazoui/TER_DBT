@@ -7,7 +7,7 @@
 
 {% if is_incremental() %}
     {% set max_date_query %}
-        SELECT COALESCE(MAX(date), '1970-01-01'::DATE 
+        SELECT COALESCE(MAX(date), '1970-01-01'::DATE) 
         FROM {{ this }}
     {% endset %}
     {% set max_date = run_query(max_date_query).columns[0][0] %}

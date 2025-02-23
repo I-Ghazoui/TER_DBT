@@ -1,16 +1,14 @@
 WITH daily_data AS (
     SELECT 
         CRYPTO_ID,
-        NAME,
         OHLC_TIMESTAMP::DATE AS TRADE_DATE,
         MAX(CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
     FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
-    GROUP BY CRYPTO_ID, NAME, OHLC_TIMESTAMP::DATE
+    GROUP BY CRYPTO_ID, OHLC_TIMESTAMP::DATE
 ),
 price_trends AS (
     SELECT 
         CRYPTO_ID,
-        NAME,
         TRADE_DATE,
         CLOSE_PRICE,
         AVG(CLOSE_PRICE) OVER (PARTITION BY CRYPTO_ID ORDER BY TRADE_DATE ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS MA_7D,
@@ -21,7 +19,7 @@ trend_analysis AS (
     SELECT 
         p.CRYPTO_ID,
         c.SYMBOL,
-        p.NAME,
+        c.NAME, -- Récupérez NAME à partir de transformed_coingecko_data_v
         p.TRADE_DATE,
         p.CLOSE_PRICE,
         p.MA_7D,
@@ -38,4 +36,4 @@ trend_analysis AS (
 SELECT *
 FROM trend_analysis
 WHERE TREND_STATUS = 'Uptrend' -- Focus on uptrends
-ORDER BY NAME ASC, TRADE_DATE DESC
+ORDER BY c.NAME ASC, TRADE_DATE DESC
