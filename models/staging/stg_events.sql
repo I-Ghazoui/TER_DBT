@@ -55,7 +55,7 @@ SELECT
     base.*,
     COALESCE(crypto_prices.price, 0) AS price
 FROM base
-JOIN crypto_prices
+LEFT JOIN crypto_prices
 ON base.CRYPTO_SYMBOL = crypto_prices.crypto_symbol
 
 {% if is_incremental() %}

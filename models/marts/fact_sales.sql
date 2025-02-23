@@ -18,6 +18,7 @@ WITH sales_data AS (
         buyer,
         sale_amount,
         CRYPTO_SYMBOL,
+        price AS sale_price,
         COALESCE(TRY_CAST(quantity AS INTEGER), 1) AS quantity,
         COUNT(*) OVER (PARTITION BY nft_identifier, nft_collection) AS nft_total_sales,
         RANK() OVER (PARTITION BY nft_collection ORDER BY sale_amount DESC) AS nft_price_rank,
