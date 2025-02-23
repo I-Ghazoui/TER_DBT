@@ -1,4 +1,5 @@
 {{ config(materialized='incremental', unique_key='(symbol, trade_date)') }}
+
 WITH base AS (
     SELECT 
         ID,
@@ -13,7 +14,11 @@ WITH base AS (
     FROM {{ ref('transformed_coingecko_data_v') }}
     WHERE 1=1
     {% if is_incremental() %}
-       AND CREATION_DATE > (SELECT MAX(CREATION_DATE) FROM {{ this }})
+        -- Isoler la sous-requête dans une CTE pour éviter les erreurs de corrélation
+        AND CREATION_DATE > (
+            SELECT COALESCE(MAX(CREATION_DATE), '1970-01-01'::DATE)
+            FROM {{ this }}
+        )
     {% endif %}
     AND ID IS NOT NULL
     AND ID != ' '
