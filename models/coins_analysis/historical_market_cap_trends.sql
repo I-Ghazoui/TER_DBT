@@ -1,26 +1,25 @@
-{{ config(materialized='incremental', unique_key='(id, creation_date)') }}
+{{ config(
+    materialized='incremental',
+    unique_key='(id, creation_date)'
+) }}
 
 {% if is_incremental() %}
-with max_date as (
-    select coalesce(max(creation_date), '1970-01-01'::timestamp) as max_creation_date
-    from {{ this }}
-),
+    {% set max_date_query %}
+        SELECT COALESCE(MAX(creation_date), '1970-01-01'::TIMESTAMP) 
+        FROM {{ this }}
+    {% endset %}
+    {% set max_date = run_query(max_date_query).columns[0][0] %}
 {% endif %}
 
-base as (
-    select *
-    from {{ ref('transformed_coingecko_data_v') }}
-    where 1=1
-    {% if is_incremental() %}
-        and creation_date > (select max_creation_date from max_date)
-    {% endif %}
-    and symbol in ('btc', 'eth', 'usdt', 'sol', 'xrp', 'doge', 'trx', 'ada', 'shib')
-)
-
-select
-    cast(creation_date as date) as date,
+SELECT
+    CAST(creation_date AS DATE) AS date,
     symbol,
     name,
     market_cap
-from base
-order by date asc
+FROM {{ ref('transformed_coingecko_data_v') }}
+WHERE 1=1
+    AND symbol IN ('btc', 'eth', 'usdt', 'sol', 'xrp', 'doge', 'trx', 'ada', 'shib')
+    {% if is_incremental() %}
+        AND creation_date > '{{ max_date }}' -- Injection de la date pré-calculée
+    {% endif %}
+ORDER BY date ASC

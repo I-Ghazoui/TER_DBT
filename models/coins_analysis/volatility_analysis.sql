@@ -1,14 +1,18 @@
-{{ config(materialized='incremental', unique_key='(symbol, trade_date)') }}
+{{ config(
+    materialized='incremental',
+    unique_key='(symbol, trade_date)'
+) }}
 
 {% if is_incremental() %}
-with max_date as (
-    select coalesce(max(creation_date), '1970-01-01'::date) as max_creation_date
-    from {{ this }}
-),
+    {% set max_date_query %}
+        SELECT COALESCE(MAX(creation_date), '1970-01-01'::DATE) 
+        FROM {{ this }}
+    {% endset %}
+    {% set max_date = run_query(max_date_query).columns[0][0] %}
 {% endif %}
 
-base as (
-    select 
+WITH base AS (
+    SELECT 
         id,
         symbol,
         name,
@@ -17,19 +21,19 @@ base as (
         low_24h,
         ath,
         atl,
-        creation_date::date as trade_date
-    from {{ ref('transformed_coingecko_data_v') }}
-    where 1=1
-    {% if is_incremental() %}
-        and creation_date > (select max_creation_date from max_date)
-    {% endif %}
-    and id is not null
-    and id != ' '
-    and name is not null
-    and name != ' '
-    and symbol is not null
-    and symbol != ' '
-    and symbol not in ('usdt', 'usdc', 'usds', 'wbtc', 'steth')
+        creation_date::DATE AS trade_date
+    FROM {{ ref('transformed_coingecko_data_v') }}
+    WHERE 1=1
+        AND id IS NOT NULL
+        AND id != ' '
+        AND name IS NOT NULL
+        AND name != ' '
+        AND symbol IS NOT NULL
+        AND symbol != ' '
+        AND symbol NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth')
+        {% if is_incremental() %}
+            AND creation_date > '{{ max_date }}' -- Date pré-calculée
+        {% endif %}
 ),
 
 volatility_analysis AS (
