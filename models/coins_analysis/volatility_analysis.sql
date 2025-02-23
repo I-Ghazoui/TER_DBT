@@ -1,33 +1,37 @@
 {{ config(materialized='incremental', unique_key='(symbol, trade_date)') }}
 
-WITH base AS (
-    SELECT 
-        ID,
-        SYMBOL,
-        NAME,
-        CURRENT_PRICE,
-        HIGH_24H,
-        LOW_24H,
-        ATH,
-        ATL,
-        CREATION_DATE::DATE AS TRADE_DATE
-    FROM {{ ref('transformed_coingecko_data_v') }}
-    WHERE 1=1
-    {% if is_incremental() %}
-        -- Isoler la sous-requête dans une CTE pour éviter les erreurs de corrélation
-        AND CREATION_DATE > (
-            SELECT COALESCE(MAX(CREATION_DATE), '1970-01-01'::DATE)
-            FROM {{ this }}
-        )
-    {% endif %}
-    AND ID IS NOT NULL
-    AND ID != ' '
-    AND NAME IS NOT NULL
-    AND NAME != ' '
-    AND SYMBOL IS NOT NULL
-    AND SYMBOL != ' '
-    AND SYMBOL NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth') -- Exclure les stablecoins et wrapped tokens
+{% if is_incremental() %}
+with max_date as (
+    select coalesce(max(creation_date), '1970-01-01'::date) as max_creation_date
+    from {{ this }}
 ),
+{% endif %}
+
+base as (
+    select 
+        id,
+        symbol,
+        name,
+        current_price,
+        high_24h,
+        low_24h,
+        ath,
+        atl,
+        creation_date::date as trade_date
+    from {{ ref('transformed_coingecko_data_v') }}
+    where 1=1
+    {% if is_incremental() %}
+        and creation_date > (select max_creation_date from max_date)
+    {% endif %}
+    and id is not null
+    and id != ' '
+    and name is not null
+    and name != ' '
+    and symbol is not null
+    and symbol != ' '
+    and symbol not in ('usdt', 'usdc', 'usds', 'wbtc', 'steth')
+),
+
 volatility_analysis AS (
     SELECT 
         ID,

@@ -1,18 +1,25 @@
 {{ config(materialized='incremental', unique_key='(id, creation_date)') }}
 
-with base as (
+{% if is_incremental() %}
+with max_date as (
+    select coalesce(max(creation_date), '1970-01-01'::timestamp) as max_creation_date
+    from {{ this }}
+),
+{% endif %}
+
+base as (
     select *
     from {{ ref('transformed_coingecko_data_v') }}
     where 1=1
     {% if is_incremental() %}
-       AND creation_date > (select max(creation_date) from {{ this }})
+        and creation_date > (select max_creation_date from max_date)
     {% endif %}
-    AND id is not null
-    AND id != ' '
-    AND name is not null
-    AND name != ' '
-    AND symbol is not null
-    AND symbol != ' '
+    and id is not null
+    and id != ' '
+    and name is not null
+    and name != ' '
+    and symbol is not null
+    and symbol != ' '
 )
 
 select
