@@ -1,32 +1,12 @@
-CREATE OR REPLACE VIEW TER_DATABASE.TER_ANALYSIS_DATA.OHLC_CORRELATION_PRICE_MARKETCAP (
-    CRYPTO_ID,
-    SYMBOL,
-    NAME,
-    TRADE_DATE,
-    PRICE_CHANGE_PERCENTAGE,
-    MARKET_CAP_CHANGE_PERCENTAGE
-) AS
-WITH transformed_metadata AS (
-    -- Extraire les métadonnées des cryptomonnaies depuis la table transformée
+WITH daily_data AS (
     SELECT 
-        ID AS CRYPTO_ID,
-        SYMBOL,
-        NAME
-    FROM {{ ref('transformed_coingecko_data_v') }}
-),
-daily_data AS (
-    -- Calculer le prix de clôture quotidien en joignant avec les métadonnées
-    SELECT 
-        t.CRYPTO_ID,
-        c.OHLC_TIMESTAMP::DATE AS TRADE_DATE,
-        MAX(c.CLOSE_PRICE) AS CLOSE_PRICE
-    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA c
-    JOIN transformed_metadata t
-        ON c.CRYPTO_ID = t.CRYPTO_ID -- Assurez-vous que cette jointure est correcte
-    GROUP BY t.CRYPTO_ID, c.OHLC_TIMESTAMP::DATE
+        CRYPTO_ID,
+        OHLC_TIMESTAMP::DATE AS TRADE_DATE,
+        MAX(CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
+    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
+    GROUP BY CRYPTO_ID, OHLC_TIMESTAMP::DATE
 ),
 price_changes AS (
-    -- Calculer les variations de prix quotidiennes
     SELECT 
         d.CRYPTO_ID,
         d.TRADE_DATE,
@@ -35,7 +15,6 @@ price_changes AS (
     FROM daily_data d
 ),
 market_cap_daily AS (
-    -- Extraire les données de capitalisation boursière quotidienne
     SELECT 
         ID AS CRYPTO_ID,
         SYMBOL,
@@ -45,7 +24,6 @@ market_cap_daily AS (
     FROM {{ ref('transformed_coingecko_data_v') }}
 ),
 market_cap_changes AS (
-    -- Calculer les variations de capitalisation boursière quotidiennes
     SELECT 
         m.CRYPTO_ID,
         m.SYMBOL,
@@ -55,7 +33,6 @@ market_cap_changes AS (
         LAG(m.MARKET_CAP) OVER (PARTITION BY m.CRYPTO_ID ORDER BY m.TRADE_DATE) AS PREV_MARKET_CAP
     FROM market_cap_daily m
 )
--- Résultat final : calculer les pourcentages de variation du prix et de la capitalisation boursière
 SELECT 
     p.CRYPTO_ID,
     c.SYMBOL,
