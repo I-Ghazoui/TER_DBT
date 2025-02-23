@@ -2,8 +2,7 @@ WITH filtered_cryptos AS (
     -- Filtrer uniquement les cryptomonnaies spécifiées
     SELECT 
         ID,
-        SYMBOL,
-        NAME
+        SYMBOL
     FROM {{ ref('transformed_coingecko_data_v') }}
     WHERE SYMBOL IN ('btc', 'eth', 'xrp', 'bnb', 'sol', 'doge', 'ada', 'trx', 'link', 'avax', 'sui', 'xlm', 'litecoin', 'ton', 'shib', 'leo', 'om', 'hype', 'dot', 'uni', 'xmr', 'near', 'pepe', 'apt', 'dai', 'icp')
 ),
@@ -35,7 +34,7 @@ trend_analysis AS (
     -- Analyser les tendances (Uptrend, Downtrend, Neutral)
     SELECT 
         p.CRYPTO_ID,
-        f.SYMBOL,
+        c.SYMBOL,
         p.TRADE_DATE,
         p.AVG_CLOSE_PRICE,
         p.MA_7D,
@@ -46,8 +45,8 @@ trend_analysis AS (
             ELSE 'Neutral'
         END AS TREND_STATUS
     FROM price_trends p
-    JOIN filtered_cryptos f
-        ON p.CRYPTO_ID = f.ID
+    JOIN filtered_cryptos c
+        ON p.CRYPTO_ID = c.ID
 )
 -- Résultat final : afficher les données pour les cryptomonnaies spécifiées
 SELECT 
