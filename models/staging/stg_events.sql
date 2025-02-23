@@ -26,7 +26,7 @@ WITH base AS (
         FROM_ADDRESS,
         TO_ADDRESS,
         CAST(CLOSING_DATE AS TIMESTAMP_NTZ) AS closing_date,
-    FROM NFT_EVENTS
+    FROM TER_DATABASE.TER_RAW_DATA.NFT_EVENTS
     WHERE EVENT_TYPE IN ('sale', 'transfer')
 )
 
