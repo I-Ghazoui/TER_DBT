@@ -19,7 +19,6 @@ trend_analysis AS (
     SELECT 
         p.CRYPTO_ID,
         c.SYMBOL,
-        c.NAME, -- Récupérez NAME à partir de transformed_coingecko_data_v
         p.TRADE_DATE,
         p.CLOSE_PRICE,
         p.MA_7D,
@@ -36,4 +35,4 @@ trend_analysis AS (
 SELECT *
 FROM trend_analysis
 WHERE TREND_STATUS = 'Uptrend' -- Focus on uptrends
-ORDER BY c.NAME ASC, TRADE_DATE DESC
+ORDER BY SYMBOL ASC, TRADE_DATE DESC
