@@ -31,12 +31,14 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   ter_dbt:
+
     coins_process:
       schema: TER_PROCESS_DATA
       latest_transformed_coingecko_data_v:
         materialized: view
       transformed_coingecko_data_v:
         materialized: view
+
     coins_analysis:
       schema: TER_ANALYSIS_DATA
       top_10_price_evolution_over_time:
@@ -52,6 +54,20 @@ models:
       latest_top_gainers_losers:
         materialized: table
       latest_fdv_gap_analysis:
+        materialized: table
+
+    ohlc_process:
+      schema: TER_PROCESS_DATA
+      transformed_coingecko_ohlc_v:
+        materialized: view
+
+    ohlc_analysis:
+      schema: TER_ANALYSIS_DATA
+      ohlc_daily_volatility:
+        materialized: table
+      ohlc_correlation_price_marktcap:
+        materialized: table
+      ohlc_price_trend:
         materialized: table
 
     staging:
