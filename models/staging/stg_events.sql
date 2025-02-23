@@ -5,6 +5,13 @@
     cluster_by=['nft_collection']
 ) }}
 
+WITH crypto_prices AS (
+    SELECT
+        SYMBOL AS crypto_symbol,
+        CURRENT_PRICE AS price
+    FROM {{ ref('latest_transformed_coingecko_data_v') }}
+),
+
 WITH base AS (
     SELECT
         TRANSACTION AS event_hash,
@@ -42,13 +49,6 @@ WITH base AS (
         CAST(CLOSING_DATE AS TIMESTAMP_NTZ) AS closing_date,
     FROM TER_DATABASE.TER_RAW_DATA.NFT_EVENTS
     WHERE EVENT_TYPE IN ('sale', 'transfer')
-)
-
-crypto_prices AS (
-    SELECT
-        SYMBOL AS crypto_symbol,
-        CURRENT_PRICE AS price
-    FROM {{ ref('latest_transformed_coingecko_data_v') }}
 )
 
 SELECT
