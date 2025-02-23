@@ -53,3 +53,17 @@ models:
         materialized: table
       latest_fdv_gap_analysis:
         materialized: table
+
+    staging:
+      schema: TER_PROCESS_DATA
+      stg_events:
+        materialized: incremental
+      stg_nft_metadata:
+        materialized: incremental
+
+    marts:
+      schema: TER_ANALYSIS_DATA
+      fact_sales:
+        materialized: incremental
+      fact_transfers:
+        materialized: incremental
