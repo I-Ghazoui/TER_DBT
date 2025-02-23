@@ -1,7 +1,7 @@
 {{
     config(
         materialized='incremental',
-        unique_key="(symbol, date)" 
+        unique_key=['symbol', 'date'] 
     )
 }}
 
