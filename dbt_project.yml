@@ -67,6 +67,8 @@ models:
         materialized: table
       ohlc_correlation_price_marktcap:
         materialized: table
+      ohlc_price_trend:
+        materialized: table
 
     staging:
       schema: TER_PROCESS_DATA
