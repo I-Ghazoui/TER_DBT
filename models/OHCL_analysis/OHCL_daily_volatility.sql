@@ -1,8 +1,19 @@
+CREATE OR REPLACE VIEW TER_DATABASE.TER_ANALYSIS_DATA.OHCL_DAILY_VOLATILITY (
+    CRYPTO_ID,
+    SYMBOL,
+    NAME,
+    AVG_DAILY_VOLATILITY,
+    AVG_MARKET_CAP,
+    SUPPLY_RATIO_PERCENTAGE,
+    DISTANCE_TO_ATH_PERCENTAGE,
+    DISTANCE_TO_ATL_PERCENTAGE
+) AS
 WITH filtered_cryptos AS (
     -- Filtrer uniquement les cryptomonnaies spécifiées
     SELECT 
         ID AS CRYPTO_ID,
-        SYMBOL
+        SYMBOL,
+        NAME
     FROM {{ ref('transformed_coingecko_data_v') }}
     WHERE SYMBOL IN ('btc', 'eth', 'xrp', 'bnb', 'sol', 'doge', 'ada', 'trx', 'link', 'avax', 'sui', 'xlm', 'litecoin', 'ton', 'shib', 'leo', 'om', 'hype', 'dot', 'uni', 'xmr', 'near', 'pepe', 'apt', 'dai', 'icp')
 ),
