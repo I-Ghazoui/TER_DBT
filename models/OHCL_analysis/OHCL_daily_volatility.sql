@@ -1,12 +1,22 @@
-WITH ohlc_volatility AS (
+WITH daily_data AS (
     SELECT 
         CRYPTO_ID,
         OHLC_TIMESTAMP::DATE AS TRADE_DATE,
+        MAX(HIGH_PRICE) AS HIGH_PRICE, -- Prix maximum quotidien
+        MIN(LOW_PRICE) AS LOW_PRICE,  -- Prix minimum quotidien
+        MAX(CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
+    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
+    GROUP BY CRYPTO_ID, OHLC_TIMESTAMP::DATE
+),
+ohlc_volatility AS (
+    SELECT 
+        CRYPTO_ID,
+        TRADE_DATE,
         HIGH_PRICE,
         LOW_PRICE,
         CLOSE_PRICE,
         (HIGH_PRICE - LOW_PRICE) / NULLIF(CLOSE_PRICE, 0) * 100 AS DAILY_VOLATILITY_PERCENTAGE
-    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
+    FROM daily_data
 ),
 coin_metadata AS (
     SELECT 
@@ -34,5 +44,6 @@ FROM ohlc_volatility v
 JOIN coin_metadata m
     ON v.CRYPTO_ID = m.CRYPTO_ID
 GROUP BY v.CRYPTO_ID, m.SYMBOL, m.NAME, m.CIRCULATING_SUPPLY, m.TOTAL_SUPPLY, m.ATH, m.ATL, m.CURRENT_PRICE
+HAVING AVG(v.DAILY_VOLATILITY_PERCENTAGE) IS NOT NULL -- Exclure les cryptomonnaies sans volatilité
 ORDER BY AVG_DAILY_VOLATILITY DESC
 LIMIT 20

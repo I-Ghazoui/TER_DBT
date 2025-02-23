@@ -1,11 +1,11 @@
 {{ config(
     materialized='incremental',
-    unique_key='(symbol, trade_date)'
+    unique_key='(symbol, trade_date)' 
 ) }}
 
 {% if is_incremental() %}
     {% set max_date_query %}
-        SELECT COALESCE(MAX(creation_date), '1970-01-01'::DATE) 
+        SELECT COALESCE(MAX(trade_date), '1970-01-01'::DATE) 
         FROM {{ this }}
     {% endset %}
     {% set max_date = run_query(max_date_query).columns[0][0] %}
@@ -21,7 +21,7 @@ WITH base AS (
         low_24h,
         ath,
         atl,
-        creation_date::DATE AS trade_date
+        creation_date::DATE AS trade_date -- ◀ Alias explicite
     FROM {{ ref('transformed_coingecko_data_v') }}
     WHERE 1=1
         AND id IS NOT NULL
@@ -32,7 +32,7 @@ WITH base AS (
         AND symbol != ' '
         AND symbol NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth')
         {% if is_incremental() %}
-            AND creation_date > '{{ max_date }}' -- Date pré-calculée
+            AND creation_date::DATE > '{{ max_date }}' -- ◀ Filtrer sur la colonne originale
         {% endif %}
 ),
 
