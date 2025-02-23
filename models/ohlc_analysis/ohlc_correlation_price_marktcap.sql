@@ -49,4 +49,4 @@ FROM daily_data_with_lag ddt
 JOIN market_cap_with_lag mcd
     ON ddt.CRYPTO_ID = mcd.CRYPTO_ID AND ddt.TRADE_DATE = mcd.TRADE_DATE
 WHERE ddt.PREV_CLOSE_PRICE IS NOT NULL
-ORDER BY mcd.NAME ASC, ddt.TRADE_DATE DESC;
+ORDER BY mcd.NAME ASC, ddt.TRADE_DATE DESC
