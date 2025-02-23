@@ -33,20 +33,6 @@ SELECT
         ELSE 'Other'
     END AS token_type
 FROM metadata_cleanup
-WHERE NOT ARRAY_CONTAINS(NULL, ARRAY_CONSTRUCT(
-    CHAIN,
-    nft_identifier,
-    nft_collection,
-    nft_contract,
-    nft_name,
-    nft_description,
-    nft_image_url,
-    nft_opensea_url,
-    updated_at,
-    nft_is_disabled,
-    nft_is_nsfw,
-    nft_token_standard
-))
 
 {% if is_incremental() %}
 WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})

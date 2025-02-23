@@ -29,25 +29,9 @@ WITH base AS (
     WHERE EVENT_TYPE IN ('sale', 'transfer')
 )
 
-SELECT *
+SELECT
+    *
 FROM base
-WHERE NOT ARRAY_CONTAINS(NULL, ARRAY_CONSTRUCT(
-    event_hash,
-    event_timestamp,
-    EVENT_TYPE,
-    CHAIN,
-    NFT_IDENTIFIER,
-    NFT_COLLECTION,
-    NFT_CONTRACT,
-    QUANTITY,
-    sale_amount,
-    currency,
-    SELLER,
-    BUYER,
-    FROM_ADDRESS,
-    TO_ADDRESS,
-    closing_date
-))
 
 {% if is_incremental() %}
 WHERE event_timestamp > (SELECT MAX(event_timestamp) FROM {{ this }})

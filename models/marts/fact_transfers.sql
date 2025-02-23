@@ -9,6 +9,7 @@ WITH transfer_data AS (
     SELECT
         event_hash AS transfer_id,
         event_timestamp,
+        nft_collection,
         nft_identifier,
         nft_contract,
         from_address,
