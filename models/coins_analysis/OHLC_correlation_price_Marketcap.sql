@@ -1,34 +1,27 @@
-WITH price_trends AS (
+WITH price_changes AS (
+    SELECT 
+        CRYPTO_ID,
+        OHLC_TIMESTAMP::DATE AS TRADE_DATE,
+        CLOSE_PRICE,
+        LAG(CLOSE_PRICE) OVER (PARTITION BY CRYPTO_ID ORDER BY OHLC_TIMESTAMP) AS PREV_CLOSE_PRICE
+    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
+),
+market_cap_changes AS (
     SELECT 
         ID AS CRYPTO_ID,
-        OHLC_TIMESTAMP::DATE AS TRADE_DATE, -- Conversion de OHLC_TIMESTAMP en DATE
-        CLOSE_PRICE,
-        AVG(CLOSE_PRICE) OVER (PARTITION BY ID ORDER BY OHLC_TIMESTAMP ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS MA_7D,
-        AVG(CLOSE_PRICE) OVER (PARTITION BY ID ORDER BY OHLC_TIMESTAMP ROWS BETWEEN 29 PRECEDING AND CURRENT ROW) AS MA_30D
-    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
-    WHERE CLOSE_PRICE IS NOT NULL -- Exclure les lignes avec des prix manquants
-),
-trend_analysis AS (
-    SELECT 
-        p.CRYPTO_ID,
-        c.SYMBOL, -- Assurez-vous que SYMBOL existe dans transformed_coingecko_data_v
-        c.NAME,   -- Assurez-vous que NAME existe dans transformed_coingecko_data_v
-        p.TRADE_DATE,
-        p.CLOSE_PRICE,
-        p.MA_7D,
-        p.MA_30D,
-        CASE 
-            WHEN p.MA_7D > p.MA_30D THEN 'Uptrend'
-            WHEN p.MA_7D < p.MA_30D THEN 'Downtrend'
-            ELSE 'Neutral'
-        END AS TREND_STATUS
-    FROM price_trends p
-    JOIN {{ ref('transformed_coingecko_data_v') }} c
-        ON p.CRYPTO_ID = c.ID -- Jointure sur CRYPTO_ID
-    WHERE c.SYMBOL IS NOT NULL -- Exclure les symboles invalides
-      AND c.NAME IS NOT NULL   -- Exclure les noms invalides
+        MARKET_CAP,
+        CREATION_DATE::DATE AS TRADE_DATE
+    FROM {{ ref('transformed_coingecko_data_v') }}
 )
-SELECT *
-FROM trend_analysis
-ORDER BY TRADE_DATE DESC
-LIMIT 20 -- Limiter les résultats à 20 lignes
+SELECT 
+    p.CRYPTO_ID,
+    c.SYMBOL,
+    c.NAME,
+    p.TRADE_DATE,
+    (p.CLOSE_PRICE - p.PREV_CLOSE_PRICE) / NULLIF(p.PREV_CLOSE_PRICE, 0) * 100 AS PRICE_CHANGE_PERCENTAGE,
+    (c.MARKET_CAP - LAG(c.MARKET_CAP) OVER (PARTITION BY c.CRYPTO_ID ORDER BY c.TRADE_DATE)) / NULLIF(LAG(c.MARKET_CAP), 0) * 100 AS MARKET_CAP_CHANGE_PERCENTAGE
+FROM price_changes p
+JOIN market_cap_changes c
+    ON p.CRYPTO_ID = c.CRYPTO_ID AND p.TRADE_DATE = c.TRADE_DATE
+WHERE p.PREV_CLOSE_PRICE IS NOT NULL
+ORDER BY p.TRADE_DATE DESC

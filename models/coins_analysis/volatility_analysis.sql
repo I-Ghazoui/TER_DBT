@@ -1,7 +1,7 @@
-{{ config(materialized='incremental', unique_key='(id, creation_date)') }}
-
+{{ config(materialized='incremental', unique_key='(symbol, trade_date)') }}
 WITH base AS (
     SELECT 
+        ID,
         SYMBOL,
         NAME,
         CURRENT_PRICE,
@@ -25,6 +25,7 @@ WITH base AS (
 ),
 volatility_analysis AS (
     SELECT 
+        ID,
         SYMBOL,
         NAME,
         TRADE_DATE,
@@ -53,4 +54,4 @@ SELECT
 FROM aggregated_metrics
 WHERE AVG_DISTANCE_TO_ATL < 15000 -- Filtrer les cryptomonnaies avec une distance à l'ATL < 15000 %
 ORDER BY AVG_RELATIVE_VOLATILITY DESC
-LIMIT 20 -- Sélectionner les 20 cryptomonnaies les plus volatiles
+LIMIT 20
