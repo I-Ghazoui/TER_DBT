@@ -11,6 +11,7 @@ WITH sales_data AS (
         event_timestamp,
         closing_date,
         CHAIN,
+        nft_collection,
         nft_contract,
         nft_identifier,
         seller,
