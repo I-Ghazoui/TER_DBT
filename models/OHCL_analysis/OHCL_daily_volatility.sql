@@ -1,14 +1,26 @@
-WITH daily_data AS (
+WITH filtered_cryptos AS (
+    -- Filtrer uniquement les cryptomonnaies spécifiées
     SELECT 
-        CRYPTO_ID,
-        OHLC_TIMESTAMP::DATE AS TRADE_DATE,
-        MAX(HIGH_PRICE) AS HIGH_PRICE, -- Prix maximum quotidien
-        MIN(LOW_PRICE) AS LOW_PRICE,  -- Prix minimum quotidien
-        MAX(CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
-    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA
-    GROUP BY CRYPTO_ID, OHLC_TIMESTAMP::DATE
+        ID AS CRYPTO_ID,
+        SYMBOL
+    FROM {{ ref('transformed_coingecko_data_v') }}
+    WHERE SYMBOL IN ('btc', 'eth', 'xrp', 'bnb', 'sol', 'doge', 'ada', 'trx', 'link', 'avax', 'sui', 'xlm', 'litecoin', 'ton', 'shib', 'leo', 'om', 'hype', 'dot', 'uni', 'xmr', 'near', 'pepe', 'apt', 'dai', 'icp')
+),
+daily_data AS (
+    -- Calculer les prix maximum, minimum et de clôture quotidiens
+    SELECT 
+        c.CRYPTO_ID,
+        c.OHLC_TIMESTAMP::DATE AS TRADE_DATE,
+        MAX(c.HIGH_PRICE) AS HIGH_PRICE, -- Prix maximum quotidien
+        MIN(c.LOW_PRICE) AS LOW_PRICE,  -- Prix minimum quotidien
+        MAX(c.CLOSE_PRICE) AS CLOSE_PRICE -- Prix de clôture quotidien
+    FROM TER_DATABASE.TER_RAW_DATA.COINGECKO_OHLC_DATA c
+    JOIN filtered_cryptos f
+        ON c.CRYPTO_ID = f.CRYPTO_ID
+    GROUP BY c.CRYPTO_ID, c.OHLC_TIMESTAMP::DATE
 ),
 ohlc_volatility AS (
+    -- Calculer la volatilité quotidienne en pourcentage
     SELECT 
         CRYPTO_ID,
         TRADE_DATE,
@@ -19,6 +31,7 @@ ohlc_volatility AS (
     FROM daily_data
 ),
 coin_metadata AS (
+    -- Extraire les métadonnées des cryptomonnaies
     SELECT 
         ID AS CRYPTO_ID,
         SYMBOL,
@@ -30,7 +43,9 @@ coin_metadata AS (
         ATL,
         CURRENT_PRICE
     FROM {{ ref('transformed_coingecko_data_v') }}
+    WHERE SYMBOL IN ('btc', 'eth', 'xrp', 'bnb', 'sol', 'doge', 'ada', 'trx', 'link', 'avax', 'sui', 'xlm', 'litecoin', 'ton', 'shib', 'leo', 'om', 'hype', 'dot', 'uni', 'xmr', 'near', 'pepe', 'apt', 'dai', 'icp')
 )
+-- Résultat final : calculer les métriques agrégées pour les cryptomonnaies spécifiées
 SELECT 
     v.CRYPTO_ID,
     m.SYMBOL,
@@ -46,4 +61,3 @@ JOIN coin_metadata m
 GROUP BY v.CRYPTO_ID, m.SYMBOL, m.NAME, m.CIRCULATING_SUPPLY, m.TOTAL_SUPPLY, m.ATH, m.ATL, m.CURRENT_PRICE
 HAVING AVG(v.DAILY_VOLATILITY_PERCENTAGE) IS NOT NULL -- Exclure les cryptomonnaies sans volatilité
 ORDER BY AVG_DAILY_VOLATILITY DESC
-LIMIT 20
