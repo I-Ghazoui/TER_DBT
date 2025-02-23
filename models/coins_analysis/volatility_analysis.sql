@@ -21,8 +21,7 @@ WITH base AS (
     AND NAME != ' '
     AND SYMBOL IS NOT NULL
     AND SYMBOL != ' '
-    AND SYMBOL NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth')
-    AND ATL > 0.0001 -- Exclure les cryptomonnaies avec un ATL extrêmement bas
+    AND SYMBOL NOT IN ('usdt', 'usdc', 'usds', 'wbtc', 'steth') -- Exclure les stablecoins et wrapped tokens
 ),
 volatility_analysis AS (
     SELECT 
@@ -31,22 +30,27 @@ volatility_analysis AS (
         TRADE_DATE,
         (HIGH_24H - LOW_24H) / NULLIF(CURRENT_PRICE, 0) * 100 AS RELATIVE_VOLATILITY_PERCENTAGE,
         (CURRENT_PRICE - ATH) / NULLIF(ATH, 0) * 100 AS DISTANCE_TO_ATH_PERCENTAGE,
-        (CURRENT_PRICE - ATL) / NULLIF(ATL, 0) * 100 AS DISTANCE_TO_ATL_PERCENTAGE,
-        CASE 
-            WHEN (CURRENT_PRICE - ATH) / NULLIF(ATH, 0) * 100 > -20 THEN 'Proche ATH'
-            WHEN (CURRENT_PRICE - ATH) / NULLIF(ATH, 0) * 100 BETWEEN -50 AND -20 THEN 'Moyennement Proche ATH'
-            ELSE 'Loin ATH'
-        END AS ATH_PROXIMITY_CATEGORY
+        (CURRENT_PRICE - ATL) / NULLIF(ATL, 0) * 100 AS DISTANCE_TO_ATL_PERCENTAGE
     FROM base
+    WHERE ATL > 0.0001 -- Exclure les cryptomonnaies avec un ATL extrêmement bas
+),
+aggregated_metrics AS (
+    SELECT 
+        SYMBOL,
+        NAME,
+        AVG(RELATIVE_VOLATILITY_PERCENTAGE) AS AVG_RELATIVE_VOLATILITY,
+        AVG(DISTANCE_TO_ATH_PERCENTAGE) AS AVG_DISTANCE_TO_ATH,
+        AVG(DISTANCE_TO_ATL_PERCENTAGE) AS AVG_DISTANCE_TO_ATL
+    FROM volatility_analysis
+    GROUP BY SYMBOL, NAME
 )
 SELECT 
     SYMBOL,
     NAME,
-    TRADE_DATE,
-    AVG(RELATIVE_VOLATILITY_PERCENTAGE) AS AVG_RELATIVE_VOLATILITY,
-    AVG(DISTANCE_TO_ATH_PERCENTAGE) AS AVG_DISTANCE_TO_ATH,
-    AVG(DISTANCE_TO_ATL_PERCENTAGE) AS AVG_DISTANCE_TO_ATL,
-    MAX(ATH_PROXIMITY_CATEGORY) AS ATH_PROXIMITY_CATEGORY
-FROM volatility_analysis
-GROUP BY SYMBOL, NAME, TRADE_DATE
-ORDER BY TRADE_DATE DESC, AVG_RELATIVE_VOLATILITY DESC
+    AVG_RELATIVE_VOLATILITY,
+    AVG_DISTANCE_TO_ATH,
+    AVG_DISTANCE_TO_ATL
+FROM aggregated_metrics
+WHERE AVG_DISTANCE_TO_ATL < 15000 -- Filtrer les cryptomonnaies avec une distance à l'ATL < 15000 %
+ORDER BY AVG_RELATIVE_VOLATILITY DESC
+LIMIT 20 -- Sélectionner les 20 cryptomonnaies les plus volatiles
