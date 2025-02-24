@@ -36,6 +36,6 @@ WITH sales_data AS (
 SELECT *
 FROM sales_data
 WHERE row_num = 1
-GROUP BY nft_collection,NFT_NAME,NFT_IMAGE_URL,price,NFT_TOTAL_SALES,event_timestamp,floor_price,supply,"1d_vol","1d_changes","7d_vol","7d_changes"
+GROUP BY nft_collection,NFT_NAME,NFT_IMAGE_URL,price,NFT_TOTAL_SALES,event_timestamp,floor_price,supply,"1d_vol","1d_changes","7d_vol","7d_changes",row_num
 ORDER BY price DESC
 LIMIT 10
