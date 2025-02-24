@@ -25,7 +25,7 @@ WITH sales_data AS (
             RANGE BETWEEN INTERVAL '7 DAY' PRECEDING AND CURRENT ROW
         ) AS "7d_vol",
 
-        (sale_price - LAG(sale_price, 7) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "7d_changes"
+        (sale_price - LAG(sale_price, 7) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "7d_changes",
 
         ROW_NUMBER() OVER (PARTITION BY nft_collection, NFT_NAME ORDER BY event_timestamp DESC) AS row_num
 
