@@ -36,5 +36,6 @@ WITH sales_data AS (
 SELECT *
 FROM sales_data
 WHERE row_num = 1
+GROUP BY nft_collection
 ORDER BY price DESC
 LIMIT 10
