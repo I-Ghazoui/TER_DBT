@@ -54,7 +54,13 @@ base AS (
 SELECT
     base.*,
     COALESCE(crypto_prices.price, 0) AS price,
-    base.sale_amount * COALESCE(crypto_prices.price, 0) AS sale_price
+    base.sale_amount * COALESCE(crypto_prices.price, 0) AS sale_price,
+    CASE
+        WHEN sale_price >= 10000 THEN 'High Value'
+        WHEN sale_price BETWEEN 1000 AND 9999 THEN 'Medium Value'
+        WHEN sale_price BETWEEN 100 AND 999 THEN 'Low Value'
+        ELSE 'Micro Sale'
+    END AS sale_category
 FROM base
 LEFT JOIN crypto_prices
 ON base.CRYPTO_SYMBOL = crypto_prices.crypto_symbol
