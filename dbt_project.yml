@@ -83,3 +83,5 @@ models:
         materialized: incremental
       fact_transfers:
         materialized: incremental
+      nfts_trends:
+        materialized: incremental
