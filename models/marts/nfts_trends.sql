@@ -15,24 +15,24 @@ WITH sales_data AS (
             PARTITION BY nft_collection
             ORDER BY event_timestamp
             RANGE BETWEEN INTERVAL '1 DAY' PRECEDING AND CURRENT ROW
-        ) AS one_day_vol,
+        ) AS "1d_vol",
 
-        (sale_price - LAG(sale_price, 1) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS one_day_changes,
+        (sale_price - LAG(sale_price, 1) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "1d_changes",
 
         SUM(sale_price) OVER (
             PARTITION BY nft_collection
             ORDER BY event_timestamp
             RANGE BETWEEN INTERVAL '7 DAY' PRECEDING AND CURRENT ROW
-        ) AS seven_day_vol,
+        ) AS "7d_vol",
 
-        (sale_price - NULLIF(LAG(sale_price) OVER (PARTITION BY nft_collection ORDER BY event_timestamp), 0)) AS seven_day_changes
+        (sale_price - LAG(sale_price, 7) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "7d_changes"
 
-    FROM {{ ref('fact_sales') }}
+    FROM TER_ANALYSIS_DATA.FACT_SALES
     WHERE event_timestamp >= DATEADD(DAY, -7, CURRENT_DATE)
 )
 
 SELECT *
 FROM sales_data
-WHERE RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) = 1
+QUALIFY RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) = 1
 ORDER BY price DESC
-LIMIT 10;
+LIMIT 10
