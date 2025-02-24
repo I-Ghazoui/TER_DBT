@@ -33,6 +33,6 @@ WITH sales_data AS (
 
 SELECT *
 FROM sales_data
-QUALIFY RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) = 1
+QUALIFY RANK() OVER (PARTITION BY nft_collection ORDER BY nft_collection,price DESC) = 1
 ORDER BY price DESC
 LIMIT 10
