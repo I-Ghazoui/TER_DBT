@@ -27,7 +27,7 @@ WITH sales_data AS (
 
         (sale_price - LAG(sale_price, 7) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "7d_changes",
 
-        ROW_NUMBER() OVER (PARTITION BY nft_collection, NFT_NAME ORDER BY event_timestamp DESC) AS row_num
+        RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) AS row_num
 
     FROM TER_ANALYSIS_DATA.FACT_SALES
     WHERE event_timestamp >= DATEADD(DAY, -7, CURRENT_DATE)
