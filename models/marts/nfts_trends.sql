@@ -29,11 +29,11 @@ WITH sales_data AS (
 
         RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) AS row_num
 
-    FROM TER_ANALYSIS_DATA.FACT_SALES
+    FROM {{ ref('fact_sales') }}
     WHERE event_timestamp >= DATEADD(DAY, -7, CURRENT_DATE)
 )
 
-SELECT DISTINCT ON (nft_collection) *
+SELECT *
 FROM sales_data
 WHERE row_num = 1
 ORDER BY price DESC
