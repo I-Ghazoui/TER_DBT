@@ -25,16 +25,14 @@ WITH sales_data AS (
             RANGE BETWEEN INTERVAL '7 DAY' PRECEDING AND CURRENT ROW
         ) AS "7d_vol",
 
-        (sale_price - LAG(sale_price, 7) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "7d_changes",
+        (sale_price - LAG(sale_price, 7) OVER (PARTITION BY nft_collection ORDER BY event_timestamp)) AS "7d_changes"
 
-        RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) AS row_num
-
-    FROM {{ ref('fact_sales') }}
+    FROM TER_ANALYSIS_DATA.FACT_SALES
     WHERE event_timestamp >= DATEADD(DAY, -7, CURRENT_DATE)
 )
 
 SELECT *
 FROM sales_data
-WHERE row_num = 1
+QUALIFY RANK() OVER (PARTITION BY nft_collection ORDER BY price DESC) = 1
 ORDER BY price DESC
 LIMIT 10
