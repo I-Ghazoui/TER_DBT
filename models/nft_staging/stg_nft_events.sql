@@ -35,7 +35,7 @@ WITH nft_events_cleaned AS (
         PROTOCOL_ADDRESS::VARCHAR AS protocol_address,
         TO_TIMESTAMP(CLOSING_DATE) AS closing_date
 
-    FROM {{ source('TER_RAW_DATA', 'NFT_EVENTS') }}
+    FROM TER_DATABASE.TER_RAW_DATA.NFT_EVENTS
     WHERE EVENT_TIMESTAMP IS NOT NULL
 )
 
