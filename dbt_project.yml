@@ -85,3 +85,7 @@ models:
         materialized: table
       payment_token_share:
         materialized: table
+      event_type_activity:
+        materialized: table
+      price_trends:
+        materialized: table
