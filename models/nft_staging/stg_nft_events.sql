@@ -40,4 +40,4 @@ WITH nft_events_cleaned AS (
 )
 
 SELECT *
-FROM nft_events_cleaned;
+FROM nft_events_cleaned
