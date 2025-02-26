@@ -70,18 +70,14 @@ models:
       ohlc_price_trend:
         materialized: table
 
-    staging:
+    nft_staging:
       schema: TER_PROCESS_DATA
-      stg_events:
-        materialized: incremental
+      stg_nft_events:
+        materialized: view
       crypto_prices:
         materialized: view
 
-    marts:
+    nft_marts:
       schema: TER_ANALYSIS_DATA
-      fact_sales:
-        materialized: incremental
-      fact_transfers:
-        materialized: incremental
-      nfts_trends:
-        materialized: view
+      daily_sales_volume:
+        materialized: table
