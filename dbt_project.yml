@@ -81,3 +81,7 @@ models:
       schema: TER_ANALYSIS_DATA
       daily_sales_volume:
         materialized: table
+      top_collections:
+        materialized: table
+      payment_token_share:
+        materialized: table
